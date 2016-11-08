@@ -8,7 +8,7 @@
  * This is an overall test of a few features of the Adafruit Feathers
  * and of the MCP9808.
  * 
- * This ocde is based on the demos provided by Adafruit.
+ * This code is based on the demos provided by Adafruit.
  * 
  * As they say... they spend time and resources making those products and
  * the linked demos... aso support them by purchasing their products.
