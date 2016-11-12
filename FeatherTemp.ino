@@ -86,8 +86,12 @@ void setup() {
     DEBUG_PRINTLN("Couldn't find RTC");
     while (1);
   }
+ 
   // Adjust real-time clock to current compile time (make sure computer clock is correct).
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  // Only needed once, then recompile and upload sketch with next line commented... 
+  // otherwise each time the feather will restart and reset the RTC to the time of the compilation.
+
+  //  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   
   // see if the SD card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
