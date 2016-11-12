@@ -1,8 +1,9 @@
 # FeatherTemp
 A simple project for temperature monitoring using Adadfruit's Feather family of boards
 
-The temperature is logged to an MicroSD Card
-an OLED display is also used to display the current value
+The temperature is logged to an MicroSD Card on a configurable interval.
+
+An OLED display is used to display the current time and temperature. This display can be toggled ON/OFF to save battery life.
 
 This is an overall test of a few features of the Adafruit Feathers
 and of the MCP9808.
@@ -10,7 +11,7 @@ and of the MCP9808.
 This code is based on the demos provided by Adafruit.
 
 As they say... they spend time and resources making those products and
-the linked demos... aso support them by purchasing their products.
+the linked demos... So support them by purchasing their products.
  
 The products used for this projects are:
  * MCP 9808 Breakout http://www.adafruit.com/products/1782
