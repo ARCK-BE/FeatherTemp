@@ -3,7 +3,8 @@ A simple project for temperature monitoring using Adadfruit's Feather family of 
 
 The temperature is logged to an MicroSD Card on a configurable interval.
 
-An OLED display is used to display the current time and temperature. This display can be toggled ON/OFF to save battery life.
+An OLED display is used to display the current time, temperature and battery status. 
+This display can be toggled ON/OFF to save battery life.
 
 This is an overall test of a few features of the Adafruit Feathers
 and of the MCP9808.
