@@ -28,6 +28,7 @@
 #include "Adafruit_MCP9808.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1306.h"
+#include <math.h>
 
 // Some Debug help
 //define DEBUG
@@ -49,12 +50,17 @@ RTC_PCF8523 rtc;
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
 
-#define BUTTON_A 9
+#define BUTTON_A 9 // be careful button A can interfere with battery lookup as it uses the same PIN.
 #define BUTTON_B 6
 #define BUTTON_C 5
 
 // for SD Card
 const int chipSelect = 10;
+
+// Pin used to measure battery level.
+#define VBATPIN A7
+#define LEDPIN 13
+bool batWarnLedState = false;
 
 // Temperature logging to SD card interval.
 const int refreshInterval = 10 * 60; // 10 minutes in seconds.
@@ -62,6 +68,7 @@ const int refreshInterval = 10 * 60; // 10 minutes in seconds.
 // Display prefs. 
 // Do we display the degrees in *C or *F
 volatile bool boolDegC=true;
+
 // Is the display ON or OFF. Off saves power.
 bool boolDisplayOn=true;
 volatile bool boolDisplayToggle=false;
@@ -115,18 +122,33 @@ void setup() {
 
   DEBUG_PRINTLN("Display started");
 
+  // Turn off led used for bettery warning.
+  pinMode(LEDPIN, OUTPUT);
+  digitalWrite(LEDPIN, LOW);
+
   // Setup the buttons on the OLED FeatherWing
-  pinMode(BUTTON_A, INPUT_PULLUP);
+  //pinMode(BUTTON_A, INPUT_PULLUP);
   pinMode(BUTTON_B, INPUT_PULLUP);
   pinMode(BUTTON_C, INPUT_PULLUP);
 
   // register interrupt handler for the on/off button for the display.
   attachInterrupt(digitalPinToInterrupt(BUTTON_C), toggleDisplay, FALLING); 
-  attachInterrupt(digitalPinToInterrupt(BUTTON_A), toggleDegC, FALLING); 
+  attachInterrupt(digitalPinToInterrupt(BUTTON_B), toggleDegC, FALLING); 
 }
 
 // Main loop.
 void loop() {
+  // Check battery status
+  float vbat = getVBat();
+  if (vbat < 3.4) {
+    // Flash led if battery level is too low.
+    batWarnLedState = !batWarnLedState;
+    digitalWrite(LEDPIN, batWarnLedState ? HIGH: LOW);
+  }
+  else {
+    digitalWrite(LEDPIN, LOW);
+  }
+  
   // Check if we have any thing to do...
   // either because the display is ON or because it is time to Log to the File
   DateTime now = rtc.now();
@@ -155,16 +177,26 @@ void loop() {
     if (boolDisplayOn) {
       display.clearDisplay();
       display.setCursor(0,0);
+      display.setTextSize(2);
       display.println(stime);
 
+      DEBUG_PRINT("BoolDegC:"); DEBUG_PRINTLN(boolDegC);
       if (boolDegC) {
-        display.print(degC); display.println("*C"); 
+        display.print(degC); display.print("*C "); 
       }
       else {
         float degF = degC * 9.0 / 5.0 + 32;
-        display.print(degF); display.println("*F");
+        display.print(degF); display.print("*F ");
       }
-  
+
+      display.setTextSize(1);
+      display.println();
+      display.print("                 ");
+      int batP = (int)round((vbat - 3.2)*100);
+      display.print(batP);
+      display.println("%");
+      DEBUG_PRINT("batP:"); DEBUG_PRINTLN(batP);
+      
       display.display(); // actually display all of the above
       DEBUG_PRINTLN("Display updated.");
     }
@@ -226,3 +258,15 @@ float getDegC() {
 
   return degC;
 }
+
+
+float getVBat() {   
+  float measuredVBat = analogRead(VBATPIN);
+  measuredVBat *= 2;    // we divided by 2, so multiply back
+  measuredVBat *= 3.3;  // multiply by 3.3V, our reference voltage
+  measuredVBat /= 1024; // convert to voltage
+  DEBUG_PRINT("VBat: ");
+  DEBUG_PRINTLN(measuredVBat);
+  return measuredVBat;
+}
+
